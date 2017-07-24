@@ -16,17 +16,11 @@ module.exports = {
     filename: 'bundle.js'
   },
   module: {
-    rules: [
-      {
-        enforce: 'pre',
-        test: jsPath,
-        loader: 'eslint-loader'
-      }
-    ],
     loaders: [
       {
         test: jsPath,
-        loaders: ['react-hot-loader', 'babel-loader']
+        exclude: /node_modules/,
+        loaders: ['react-hot-loader', 'babel-loader', 'eslint-loader']
       },
       {
         test: /\.scss$/,
