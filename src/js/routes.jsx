@@ -1,14 +1,10 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 
-const div = () => (
-  <div>
-    Hello!
-  </div>
-);
+import LandingPage from 'js/components/landingPage';
 
 const routes = [
-  <Route path="/" component={div} key={0} />,
+  <Route path="/" component={LandingPage} key={0} />,
 ];
 
 export default routes;
