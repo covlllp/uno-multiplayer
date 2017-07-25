@@ -2,9 +2,10 @@
   "name": "uno-multiplayer",
   "version": "1.0.0",
   "description": "multiplayer uno",
-  "main": "index.js",
+  "main": "server",
   "scripts": {
     "start": "node server",
+    "nodemon": "nodemon --watch server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -41,6 +42,7 @@
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.1.0",
     "node-sass": "^4.5.3",
+    "nodemon": "^1.11.0",
     "proxy-middleware": "^0.15.0",
     "react": "^15.6.1",
     "react-hot-loader": "^1.3.1",
