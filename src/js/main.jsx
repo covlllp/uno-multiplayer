@@ -6,16 +6,15 @@ import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 
+import reducer from 'js/reducers';
 import routes from 'js/routes';
-
-console.log('hello!');
 
 const middleware = [thunk];
 if (process.env.NODE_ENV !== 'production') {
   middleware.push(createLogger());
 }
 
-const store = createStore(() => {}, applyMiddleware(...middleware));
+const store = createStore(reducer, applyMiddleware(...middleware));
 
 render(
   <Provider store={store} >
