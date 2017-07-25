@@ -10,7 +10,10 @@ var DATABASE_URI = require(path.join(__dirname, '../env')).DATABASE_URI;
 var db = mongoose.connect(DATABASE_URI, { useMongoClient: true });
 
 // Require the models
-// require('./models/cat');
+require('./models/card');
+require('./models/cardDeck');
+require('./models/player');
+require('./models/game');
 
 // Just return a simple promise!
 var startDbPromise = new Promise(function(resolve, reject) {
