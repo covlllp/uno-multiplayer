@@ -9,6 +9,9 @@ var startDb = require('./db');
 var createApplication = new Promise(function(resolve, reject) {
   var app = require('./app');
   server.on('request', app);
+
+  // set up sockets
+  require('./socket')(server);
   resolve();
 });
 
