@@ -5,6 +5,7 @@ var Promise = require('bluebird');
 var path = require('path');
 var chalk = require('chalk');
 
+mongoose.Promise = require('bluebird');
 
 var DATABASE_URI = require(path.join(__dirname, '../env')).DATABASE_URI;
 var db = mongoose.connect(DATABASE_URI, { useMongoClient: true });

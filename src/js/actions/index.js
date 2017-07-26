@@ -1,7 +1,13 @@
 import { createActions } from 'redux-actions';
 
 export const actions = {
-  SET_PLAYER: 'SET_PLAYER',
+  SET_GAME_INFO: 'SET_GAME_INFO',
 };
 
-export const dispatchActions = createActions(...Object.keys(actions));
+export const actionCreators = createActions(...Object.keys(actions));
+
+export function startGame(dispatch) {
+  fetch('/api/game/start').then(res => res.json()).then((json) => {
+    dispatch(actionCreators.setGameInfo(json));
+  });
+}
