@@ -17,11 +17,12 @@ function addSocketConnectionCallback(io) {
   // Board socket
   board.on('connection', function(socket) {
     console.log('board connected');
+    player.emit('gameCreated');
 
     socket.on('disconnect', function() {
       console.log('game ended');
       delete global.currentGameId;
-    })
+    });
   });
 
   // Player socket
@@ -30,6 +31,7 @@ function addSocketConnectionCallback(io) {
     console.log('player connected');
 
     socket.on('disconnect', function() {
+      console.log('player left');
       if (!global.currentGameId) return;
       if (!player) return;
 
@@ -41,7 +43,6 @@ function addSocketConnectionCallback(io) {
       }).then((game) => {
         board.emit('gameUpdate', game);
       })
-      console.log('player left');
     })
 
     socket.on('playerJoin', function(playerId) {

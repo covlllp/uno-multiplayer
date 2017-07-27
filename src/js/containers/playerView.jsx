@@ -12,10 +12,24 @@ class PlayerView extends React.Component {
   }
 
   componentDidMount() {
-    this.props.actions.createPlayer()
-      .then(() => {
-        socket.emit('playerJoin', this.props.id);
-      });
+    this.createPlayer();
+    this.setSocketCallbacks();
+  }
+
+  setSocketCallbacks() {
+    socket.on('gameCreated', () => {
+      this.createPlayer();
+    });
+  }
+
+  createPlayer() {
+    const promises = [];
+    if (!this.props.id) {
+      promises.push(this.props.actions.createPlayer());
+    }
+    Promise.all(promises).then(() => {
+      socket.emit('playerJoin', this.props.id);
+    });
   }
 
   render() {
