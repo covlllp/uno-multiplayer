@@ -58,6 +58,15 @@ function addSocketConnectionCallback(io) {
         board.emit('gameUpdate', game);
       });
     });
+
+    socket.on('playerReady', function() {
+      if (!global.currentGameId) return;
+      Game.findOne({ _id: global.currentGameId }).then((game) => {
+        return game.checkReady();
+      }).then((isReady) => {
+        if (isReady) board.emit('gameReady');
+      });
+    });
   });
 
 

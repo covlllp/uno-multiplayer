@@ -18,6 +18,7 @@ class BoardView extends Component {
 
   setSocketCallbacks() {
     socket.on('gameUpdate', this.props.actions.setGameInfo);
+    socket.on('gameReady', this.props.actions.indicateGameReady);
   }
 
   render() {

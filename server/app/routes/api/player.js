@@ -13,3 +13,11 @@ router.post('/', function(req, res, next) {
     next(err);
   });
 });
+
+router.put('/:id', function(req, res, next) {
+  var id = req.params.id;
+  var body = req.body;
+  Player.findOneAndUpdate({ _id: id }, body, { new: true }).then((player) => {
+    res.json(player);
+  });
+});

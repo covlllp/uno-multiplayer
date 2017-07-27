@@ -3,10 +3,15 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 // import { bindActionCreators } from 'redux';
 
-import { createPlayer } from 'js/actions';
+import { createPlayer, updatePlayer } from 'js/actions';
 import { socket, initializeSocket } from 'js/socket';
 
 class PlayerView extends React.Component {
+  constructor(props) {
+    super(props);
+    this.indicateReady = this.indicateReady.bind(this);
+  }
+
   componentWillMount() {
     initializeSocket('/player');
   }
@@ -32,9 +37,17 @@ class PlayerView extends React.Component {
     });
   }
 
+  indicateReady() {
+    this.props.actions.updatePlayer(this.props.id, {
+      isReady: true,
+    }).then(() => {
+      socket.emit('playerReady');
+    });
+  }
+
   render() {
-    const button = this.props.isReady ? null : <button>Ready</button>;
-    return <div>Player! {button}</div>;
+    const button = this.props.isReady ? null : <button onClick={this.indicateReady}>Ready</button>;
+    return <div>Player {this.props.id}! {button}</div>;
   }
 }
 
@@ -51,12 +64,12 @@ PlayerView.defaultProps = {
 
 const mapStateToProps = state => ({
   ...state.player,
-  isReady: state.playerReady,
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: {
     createPlayer: createPlayer.bind(this, dispatch),
+    updatePlayer: updatePlayer.bind(this, dispatch),
   },
 });
 

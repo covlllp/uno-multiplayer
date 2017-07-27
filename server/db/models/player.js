@@ -5,7 +5,8 @@ var ObjectId = Schema.ObjectId;
 
 var schema = new Schema({
   name: { type: String },
-  cards: [{ type: ObjectId, ref: 'Card' }]
+  isReady: { type: Boolean, default: false },
+  cards: [{ type: ObjectId, ref: 'Card' }],
 });
 
 mongoose.model('Player', schema);

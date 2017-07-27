@@ -4,6 +4,7 @@ export const actions = {
   INDICATE_GAME_READY: 'INDICATE_GAME_READY',
   SET_GAME_INFO: 'SET_GAME_INFO',
   SET_PLAYER_INFO: 'SET_PLAYER_INFO',
+  INDICATE_PLAYER_READY: 'INDICATE_PLAYER_READY',
 };
 
 export const actionCreators = createActions(...Object.keys(actions));
@@ -20,10 +21,11 @@ function deserializeGameData(json) {
 }
 
 function deserializePlayerData(json) {
-  const { cards, _id } = json;
+  const { cards, isReady, _id } = json;
   return {
     cards,
     id: _id,
+    isReady,
   };
 }
 
@@ -40,6 +42,21 @@ export function createNewGame(dispatch) {
 export function createPlayer(dispatch) {
   return fetch('/api/player', {
     method: 'POST',
+  }).then(res => res.json())
+    .then((json) => {
+      const data = deserializePlayerData(json);
+      dispatch(actionCreators.setPlayerInfo(data));
+    });
+}
+
+export function updatePlayer(dispatch, playerId, body) {
+  return fetch(`/api/player/${playerId}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
   }).then(res => res.json())
     .then((json) => {
       const data = deserializePlayerData(json);

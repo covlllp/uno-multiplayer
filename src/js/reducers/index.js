@@ -17,10 +17,7 @@ const initialState = {
     players: [],
   },
   gameReady: false,
-  playerReady: false,
-  player: {
-    isReady: false,
-  },
+  player: { isReady: false },
 };
 
 const reducer = handleActions(actionMap, initialState);

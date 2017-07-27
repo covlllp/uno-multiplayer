@@ -83,6 +83,15 @@ schema.methods.removePlayer = function addPlayer(playerId) {
   return this.updatePlayers();
 }
 
+schema.methods.checkReady = function checkReady() {
+  if (this.players.length < 2) return Promise.resolve(false);
+  return Player.find({ _id: { $in: this.players } }).then(function(players) {
+    return players.every(function(player) {
+      return player.isReady;
+    });
+  });
+}
+
 
 
 mongoose.model('Game', schema);
