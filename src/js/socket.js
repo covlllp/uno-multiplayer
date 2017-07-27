@@ -3,6 +3,6 @@
 
 export let socket = null;
 
-export const initializeSocket = () => {
-  socket = io();
+export const initializeSocket = (namespace) => {
+  socket = io(namespace);
 };

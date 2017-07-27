@@ -2,13 +2,25 @@ import { handleActions } from 'redux-actions';
 import { actions } from 'js/actions';
 
 const actionMap = {};
-actionMap[actions.SET_GAME_INFO] = (state, action) => (
-  Object.assign({}, state, { game: action.payload })
-);
+actionMap[actions.INDICATE_GAME_READY] = state => ({
+  ...state, gameReady: true,
+});
+actionMap[actions.SET_GAME_INFO] = (state, action) => ({
+  ...state, game: action.payload,
+});
+actionMap[actions.SET_PLAYER_INFO] = (state, action) => ({
+  ...state, player: action.payload,
+});
 
 const initialState = {
+  game: {
+    players: [],
+  },
   gameReady: false,
-  game: {},
+  playerReady: false,
+  player: {
+    isReady: false,
+  },
 };
 
 const reducer = handleActions(actionMap, initialState);

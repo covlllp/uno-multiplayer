@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
 var Card = mongoose.model('Card');
+var Player = mongoose.model('Player');
 
 var constants = require('./../../constants');
 var CARD_COLORS = constants.CARD_COLORS;
@@ -39,21 +40,49 @@ schema.methods.addNewDeck = function addNewDeck() {
     } else {
       Object.keys(CARD_VALUES).forEach(function(valueKey) {
         var value = CARD_VALUES[valueKey]
-        var penalty = value === CARD_VALUES.DRAW ? 2 : 0;
-        createdCardPromises.push(new Card({
-          color: color,
-          value: value,
-          penalty: penalty,
-          game: that._id
-        }).save())
+        var times = value === CARD_VALUES.ZERO ? 1 : 2;
+        for (var i = 0; i < times; i++) {
+          var penalty = value === CARD_VALUES.DRAW ? 2 : 0;
+          createdCardPromises.push(new Card({
+            color: color,
+            value: value,
+            penalty: penalty,
+            game: that._id
+          }).save())
+        }
       });
     }
   });
 
   return Promise.all(createdCardPromises).then(function(cards) {
-    that.drawDeck = Card.shuffleCards(cards);
-    return that;
+    that.drawDeck = that.drawDeck.concat(Card.shuffleCards(cards));
+    return that.save();
   });
 }
+
+schema.methods.updatePlayers = function updatePlayers() {
+  var that = this;
+  return Player.find({
+    _id: { $in: this.players }
+  }).then(function(players) {
+    that.players = players;
+    return that.save();
+  });
+}
+
+schema.methods.addPlayer = function addPlayer(playerId) {
+  this.players.push(playerId)
+  return this.updatePlayers();
+}
+
+schema.methods.removePlayer = function addPlayer(playerId) {
+  var playerIndex = this.players.indexOf(playerId);
+  if (playerIndex < 0) return this;
+
+  this.players.splice(playerIndex, 1);
+  return this.updatePlayers();
+}
+
+
 
 mongoose.model('Game', schema);

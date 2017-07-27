@@ -5,8 +5,7 @@ var ObjectId = Schema.ObjectId;
 
 var schema = new Schema({
   name: { type: String },
-  cards: [{ type: ObjectId, ref: 'Card' }],
-  game: { type: ObjectId, ref: 'Game' }
+  cards: [{ type: ObjectId, ref: 'Card' }]
 });
 
 mongoose.model('Player', schema);

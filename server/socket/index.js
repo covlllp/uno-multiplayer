@@ -1,6 +1,9 @@
 'use strict';
 
 var socketIo = require('socket.io');
+var mongoose = require('mongoose');
+var Game = mongoose.model('Game');
+var Player = mongoose.model('Player');
 
 module.exports = function setUpSockets(server) {
   var io = socketIo(server);
@@ -8,10 +11,58 @@ module.exports = function setUpSockets(server) {
 }
 
 function addSocketConnectionCallback(io) {
-  io.on('connection', function(socket) {
-    console.log('someone connected');
+  var board = io.of('/board');
+  var player = io.of('/player');
+
+  // Board socket
+  board.on('connection', function(socket) {
+    console.log('board connected');
+
     socket.on('disconnect', function() {
-      console.log('someone disconnected');
+      console.log('game ended');
+      delete global.currentGameId;
+    })
+  });
+
+  // Player socket
+  player.on('connection', function(socket) {
+    var player;
+    console.log('player connected');
+
+    socket.on('disconnect', function() {
+      if (!global.currentGameId) return;
+      if (!player) return;
+
+      Game.findOne({ _id: global.currentGameId })
+        .populate('drawDeck').then((game) => {
+        return game.removePlayer(player);
+      }).then((game) => {
+        return game.populate('players');
+      }).then((game) => {
+        board.emit('gameUpdate', game);
+      })
+      console.log('player left');
+    })
+
+    socket.on('playerJoin', function(playerId) {
+      player = playerId;
+      if (!global.currentGameId) return;
+
+      Game.findOne({ _id: global.currentGameId })
+        .populate('drawDeck').then((game) => {
+        return game.addPlayer(playerId);
+      }).then((game) => {
+        return game.populate('players');
+      }).then((game) => {
+        board.emit('gameUpdate', game);
+      });
     });
+  });
+
+
+
+  // Global socket
+  io.on('connection', function(socket) {
+    console.log('new socket connection');
   });
 }

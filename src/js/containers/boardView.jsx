@@ -1,30 +1,56 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-// import { bindActionCreators } from 'redux';
+import { bindActionCreators } from 'redux';
 
-import { startGame } from 'js/actions';
+import { createNewGame, actionCreators } from 'js/actions';
+import { socket, initializeSocket } from 'js/socket';
 
 class BoardView extends Component {
+  componentWillMount() {
+    initializeSocket('/board');
+  }
+
   componentDidMount() {
-    this.props.actions.startGame();
+    this.props.actions.createNewGame();
+    this.setSocketCallbacks();
+  }
+
+  setSocketCallbacks() {
+    socket.on('gameUpdate', this.props.actions.setGameInfo);
   }
 
   render() {
-    console.log(this.props);
-    return <div>Board!</div>;
+    return (
+      <div>
+        <div>
+          Board! {this.props.gameReady.toString()}
+        </div>
+        <div>
+          Players: {this.props.players.length}
+        </div>
+      </div>
+    );
   }
 }
 
 BoardView.propTypes = {
   actions: PropTypes.objectOf(PropTypes.func).isRequired,
+  gameReady: PropTypes.bool.isRequired,
+  players: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
-const mapStateToProps = state => state.game;
+
+const mapStateToProps = state => ({
+  ...state.game,
+  gameReady: state.gameReady,
+});
 
 const mapDispatchToProps = dispatch => ({
   actions: {
-    startGame: startGame.bind(this, dispatch),
+    setGameInfo: bindActionCreators(actionCreators.setGameInfo, dispatch),
+    indicateGameReady: bindActionCreators(actionCreators.indicateGameReady, dispatch),
+    createNewGame: createNewGame.bind(this, dispatch),
   },
 });
 
