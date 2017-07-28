@@ -17,6 +17,7 @@ const PlayerReady = props => (
           gameId={props.gameId}
           color={card.color}
           value={card.value}
+          disabled={!props.isPlayerTurn}
           key={card.id}
           onClick={props.playCard}
         />
