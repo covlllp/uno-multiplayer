@@ -1,14 +1,15 @@
 import express from 'express';
 
+import gameRouter from './game';
+import playerRouter from './player';
+
 const router = express.Router();
 
 export default router;
 
-console.log('api routes set up');
-
 // add routes here
-router.use('/game', require('./game'));
-router.use('/player', require('./player'));
+router.use('/game', gameRouter);
+router.use('/player', playerRouter);
 
 // error handling
 router.use((req, res) => {
