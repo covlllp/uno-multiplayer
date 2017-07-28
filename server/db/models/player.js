@@ -1,9 +1,9 @@
-'use strict';
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.ObjectId;
+import mongoose from 'mongoose';
 
-var schema = new Schema({
+const Schema = mongoose.Schema;
+const ObjectId = Schema.ObjectId;
+
+const schema = new Schema({
   name: { type: String },
   isReady: { type: Boolean, default: false },
   cards: [{ type: ObjectId, ref: 'Card' }],

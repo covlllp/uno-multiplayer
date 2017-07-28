@@ -1,8 +1,18 @@
-'use strict';
+import express from 'express';
 
-var express = require('express');
-var app = express();
-module.exports = app;
+import configureMiddleware from './middleware/configure';
+import configureRoutes from './routes/configure';
 
-require('./middleware/configure')(app);
-require('./routes/configure')(app);
+const app = express();
+console.log('app created');
+
+// configureMiddleware(app);
+// configureRoutes(app);
+
+app.use('*', (req, res) => {
+  res.json({
+    hello: 'world',
+  });
+});
+
+export default app;

@@ -1,27 +1,32 @@
-'use strict';
+import chalk from 'chalk';
+import http from 'http';
 
-var Promise = require('bluebird');
-var chalk = require('chalk');
-var server = require('http').createServer();
+import startDbPromise from './db';
+import setUpSockets from './socket';
 
-var startDb = require('./db');
+const server = http.createServer();
+console.log('start');
 
-var createApplication = new Promise(function(resolve, reject) {
-  var app = require('./app');
-  server.on('request', app);
+const createApplication = new Promise((resolve) => {
+  server.on('request', require('./app'));
 
   // set up sockets
-  require('./socket')(server);
+  setUpSockets(server);
+  console.log('serverStart');
   resolve();
 });
 
 function startServer() {
-  var PORT = process.env.PORT || 3000;
-  server.listen(PORT, function() {
+  console.log('server starting');
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
     console.log(chalk.blue('Server started on port', chalk.magenta(PORT)));
   });
 }
 
-startDb.then(createApplication).then(startServer).catch(function(err) {
-  console.error('Initialization error: ', chalk.red(err.message));
-});
+startDbPromise
+  .then(createApplication)
+  .then(startServer)
+  .catch((err) => {
+    console.error('Initialization error: ', chalk.red(err.message));
+  });

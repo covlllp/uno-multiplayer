@@ -1,23 +1,25 @@
-'use strict';
+import express from 'express';
+import mongoose from 'mongoose';
 
-var router = require('express').Router();
-var mongoose = require('mongoose');
-var Player = mongoose.model('Player');
+const router = express.Router();
+const Player = mongoose.model('Player');
 
-module.exports = router;
-
-router.post('/', function(req, res, next) {
+router.post('/', (res, next) => {
   Player.create({}).then((player) => {
     res.json(player);
-  }).catch(function(err) {
+  }).catch((err) => {
     next(err);
   });
 });
 
-router.put('/:id', function(req, res, next) {
-  var id = req.params.id;
-  var body = req.body;
+router.put('/:id', (req, res, next) => {
+  const { id } = req.params;
+  const { body } = req;
   Player.findOneAndUpdate({ _id: id }, body, { new: true }).then((player) => {
     res.json(player);
+  }).catch((err) => {
+    next(err);
   });
 });
+
+export default router;

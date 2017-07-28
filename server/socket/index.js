@@ -1,40 +1,33 @@
-'use strict';
+import mongoose from 'mongoose';
+import socketIo from 'socket.io';
 
-var socketIo = require('socket.io');
-var mongoose = require('mongoose');
-var Game = mongoose.model('Game');
-var Player = mongoose.model('Player');
-
-module.exports = function setUpSockets(server) {
-  var io = socketIo(server);
-  addSocketConnectionCallback(io);
-}
+const Game = mongoose.model('Game');
 
 function addSocketConnectionCallback(io) {
-  var board = io.of('/board');
-  var player = io.of('/player');
+  const board = io.of('/board');
+  const player = io.of('/player');
 
   // Board socket
-  board.on('connection', function(socket) {
+  board.on('connection', (socket) => {
     console.log('board connected');
 
-    socket.on('disconnect', function() {
+    socket.on('disconnect', () => {
       console.log('game ended');
       delete global.currentGameId;
     });
 
-    socket.on('gameCreated', function() {
+    socket.on('gameCreated', () => {
       player.emit('gameCreated');
     });
 
-    socket.on('gameUpdate', function() {
+    socket.on('gameUpdate', () => {
       Game.findOne({ _id: global.currentGameId }).populate({
         path: 'players',
         model: 'Player',
         populate: {
           path: 'cards',
-          model: 'Card'
-        }
+          model: 'Card',
+        },
       }).then((game) => {
         player.emit('gameUpdate', game);
       });
@@ -42,64 +35,64 @@ function addSocketConnectionCallback(io) {
   });
 
   // Player socket
-  player.on('connection', function(socket) {
-    var player;
+  player.on('connection', (socket) => {
+    let socketPlayer = null;
     console.log('player connected');
 
-    socket.on('disconnect', function() {
+    socket.on('disconnect', () => {
       console.log('player left');
       if (!global.currentGameId) return;
-      if (!player) return;
+      if (!socketPlayer) return;
 
       Game.findOne({ _id: global.currentGameId })
+        .then(game => game.removePlayer(player))
         .then((game) => {
-        return game.removePlayer(player);
-      }).then((game) => {
-        board.emit('gameUpdate', game);
-      }).catch((err) => {
-        console.log('error caught: ', err);
-      });
+          board.emit('gameUpdate', game);
+        }).catch((err) => {
+          console.log('error caught: ', err);
+        });
     });
 
-    socket.on('playerJoin', function(playerId) {
-      console.log('player ' + playerId + ' joined')
-      player = playerId;
+    socket.on('playerJoin', (playerId) => {
+      console.log(`player ${playerId} joined`);
+      socketPlayer = playerId;
       if (!global.currentGameId) return;
 
       Game.findOne({ _id: global.currentGameId })
-      .then((game) => {
-        return game.addPlayer(playerId);
-      }).then((game) => {
-        board.emit('gameUpdate', game);
-      }).catch((err) => {
-        console.log('error caught: ', err);
-      });
+        .then(game => game.addPlayer(playerId))
+        .then((game) => {
+          board.emit('gameUpdate', game);
+        }).catch((err) => {
+          console.log('error caught: ', err);
+        });
     });
 
-    socket.on('playerReady', function() {
+    socket.on('playerReady', () => {
       if (!global.currentGameId) return;
-      Game.findOne({ _id: global.currentGameId }).then((game) => {
-        return game.checkReady();
-      }).then((isReady) => {
-        if (isReady) board.emit('gameReady');
-      });
+      Game.findOne({ _id: global.currentGameId }).then(game => game.checkReady())
+        .then((isReady) => {
+          if (isReady) board.emit('gameReady');
+        });
     });
 
-    socket.on('gameUpdate', function() {
-      console.log('player game update')
-      Game.findOne({ _id: global.currentGameId }).then((game) => {
-        return game.populateFields();
-      }).then((game) => {
-        board.emit('gameUpdate', game);
-        player.emit('gameUpdate', game);
-      });
+    socket.on('gameUpdate', () => {
+      console.log('player game update');
+      Game.findOne({ _id: global.currentGameId }).then(game => game.populateFields())
+        .then((game) => {
+          board.emit('gameUpdate', game);
+          player.emit('gameUpdate', game);
+        });
     });
   });
-
 
 
   // Global socket
-  io.on('connection', function(socket) {
+  io.on('connection', () => {
     console.log('new socket connection');
   });
+}
+
+export default function setUpSockets(server) {
+  const io = socketIo(server);
+  addSocketConnectionCallback(io);
 }

@@ -1,12 +1,10 @@
-'use strict';
-
-module.exports = {
+const constants = {
   CARD_COLORS: {
     RED: 'red',
     YELLOW: 'yellow',
     GREEN: 'green',
     BLUE: 'blue',
-    WILD: 'wild'
+    WILD: 'wild',
   },
   CARD_VALUES: {
     ZERO: '0',
@@ -21,7 +19,9 @@ module.exports = {
     NINE: '9',
     SKIP: 'skip',
     REVERSE: 'reverse',
-    DRAW: 'draw'
+    DRAW: 'draw',
   },
   DEAL_SIZE: 5,
 };
+
+export default constants;

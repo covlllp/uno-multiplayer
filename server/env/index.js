@@ -1,11 +1,6 @@
-'use strict';
+import devConfig from './development';
+import productionConfig from './production';
 
-var path = require('path');
-var devConfigPath = path.join(__dirname, './development.js');
-var productionConfigPath = path.join(__dirname, './production.js');
+const config = process.env.NODE_ENV === 'production' ? productionConfig : devConfig;
 
-if (process.env.NODE_ENV === 'production') {
-  module.exports = require(productionConfigPath);
-} else {
-  module.exports = require(devConfigPath);
-}
+export default config;

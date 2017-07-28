@@ -1,37 +1,34 @@
-'use strict';
-var Promise = require('bluebird');
-var mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-var Schema = mongoose.Schema;
-var ObjectId = Schema.ObjectId;
-var constants = require('./../../constants');
-var CARD_COLORS = constants.CARD_COLORS;
-var CARD_VALUES = constants.CARD_VALUES;
+import constants from './../../constants';
 
-var colors = Object.keys(CARD_COLORS).map(function(key) {
-  return CARD_COLORS[key];
-});
-var values = Object.keys(constants.CARD_VALUES).map(function(key) {
-  return CARD_VALUES[key];
-});
+const Schema = mongoose.Schema;
+const ObjectId = Schema.ObjectId;
+const {
+  CARD_COLORS,
+  CARD_VALUES,
+} = constants;
 
-var schema = Schema({
+const colors = Object.keys(CARD_COLORS).map(key => CARD_COLORS[key]);
+const values = Object.keys(CARD_VALUES).map(key => CARD_VALUES[key]);
+
+const schema = Schema({
   color: { type: String, enum: colors },
   value: { type: String, enum: values },
   penalty: { type: Number },
-  game: { type: ObjectId, ref: 'Game' }
+  game: { type: ObjectId, ref: 'Game' },
 });
 
 schema.statics.shuffleCards = function shuffleCards(cards) {
-  var clone = cards.slice(0);
+  const clone = cards.slice(0);
 
   // Implement Knuth Shuffle
-  var currentIndex = clone.length;
-  var temporaryValue;
-  var randomIndex;
+  let currentIndex = clone.length;
+  let temporaryValue = null;
+  let randomIndex = null;
 
   // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
+  while (currentIndex !== 0) {
     // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
@@ -42,6 +39,6 @@ schema.statics.shuffleCards = function shuffleCards(cards) {
     clone[randomIndex] = temporaryValue;
   }
   return clone;
-}
+};
 
 mongoose.model('Card', schema);

@@ -1,49 +1,48 @@
-'use strict';
+import express from 'express';
+import mongoose from 'mongoose';
 
-var router = require('express').Router();
-var mongoose = require('mongoose');
-var Game = mongoose.model('Game');
-var Card = mongoose.model('Card');
+const router = express.Router();
+const Game = mongoose.model('Game');
 
-module.exports = router;
-
-router.post('/create', function(req, res, next) {
+router.post('/create', (req, res, next) => {
   if (global.currentGameId) {
     res.status(403).end();
     return;
   }
 
-  var newGame = new Game({});
-  newGame.addNewDeck().then(function(game) {
-    global.currentGameId = game._id;
+  const newGame = new Game({});
+  newGame.addNewDeck().then((game) => {
+    const { _id } = game;
+    global.currentGameId = _id;
     res.json(game);
-  }).catch(function(err) {
+  }).catch((err) => {
     next(err);
   });
 });
 
-router.put('/playCard/:id', function(req, res, next) {
-  Game.findOne({ _id: req.params.id }).then(function(game) {
-    return game.playCard(req.body);
-  }).then(function(game) {
-    return game.populateFields();
-  }).then(function(game) {
-    res.json(game);
-  }).catch(function(err) {
-    next(err);
-  });
+router.put('/playCard/:id', (req, res, next) => {
+  Game.findOne({ _id: req.params.id })
+    .then(game => game.playCard(req.body))
+    .then(game => game.populateFields())
+    .then((game) => {
+      res.json(game);
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
-router.put('/start/:id', function(req, res, next) {
-  Game.findOne({ _id: req.params.id }).then(function(game) {
-    return game.dealCards();
-  }).then(function(game) {
-    return game.flipCard();
-  }).then(function(game) {
-    return game.populateFields();
-  }).then(function(game) {
-    res.json(game);
-  }).catch(function(err) {
-    next(err);
-  });
+router.put('/start/:id', (req, res, next) => {
+  Game.findOne({ _id: req.params.id })
+    .then(game => game.dealCards())
+    .then(game => game.flipCard())
+    .then(game => game.populateFields())
+    .then((game) => {
+      res.json(game);
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
+
+export default router;

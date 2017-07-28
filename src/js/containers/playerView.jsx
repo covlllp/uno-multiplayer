@@ -36,7 +36,6 @@ class PlayerView extends React.Component {
       this.createPlayer();
     });
     socket.on('gameUpdate', (gameData) => {
-      console.log('hello');
       const { player, playerTurn, gameId } = deserializeGameDataForPlayer(gameData, this.props.id);
       this.props.actions.setPlayerInfo(player);
       this.props.actions.setPlayerTurn(playerTurn);
@@ -64,14 +63,12 @@ class PlayerView extends React.Component {
 
   playCard(gameId, body) {
     this.props.actions.playCard(gameId, body).then(() => {
-      console.log('card played');
       socket.emit('gameUpdate');
     });
   }
 
   render() {
     const { id, cards, isPlayerTurn, gameId } = this.props;
-    console.log('game id', gameId);
     return this.props.isReady ?
       <PlayerReady
         id={id}

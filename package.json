@@ -4,9 +4,9 @@
   "description": "multiplayer uno",
   "main": "server",
   "scripts": {
-    "start": "node server",
+    "start": "babel-node server --presets es2015,stage-0",
     "build": "webpack -p",
-    "nodemon": "nodemon --watch server",
+    "nodemon": "nodemon server --watch server --exec babel-node --presets es2015,stage-0",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -43,6 +43,7 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
+    "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
     "babel-loader": "^7.1.1",
     "babel-preset-es2015": "^6.24.1",
