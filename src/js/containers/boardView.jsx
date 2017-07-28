@@ -19,7 +19,9 @@ class BoardView extends Component {
   }
 
   componentDidMount() {
-    this.props.actions.createNewGame();
+    this.props.actions.createNewGame().then(() => {
+      socket.emit('gameCreated');
+    });
     this.setSocketCallbacks();
   }
 
@@ -44,7 +46,11 @@ class BoardView extends Component {
     } = this.props;
 
     const card = lastPlayedCard ?
-      <Card color={lastPlayedCard.color} value={lastPlayedCard.value} /> :
+      (<Card
+        color={lastPlayedCard.color}
+        value={lastPlayedCard.value}
+        id={lastPlayedCard.id}
+      />) :
       null;
 
     return (

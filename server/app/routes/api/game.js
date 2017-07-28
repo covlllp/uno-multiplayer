@@ -22,6 +22,18 @@ router.post('/create', function(req, res, next) {
   });
 });
 
+router.put('/playCard/:id', function(req, res, next) {
+  Game.findOne({ _id: req.params.id }).then(function(game) {
+    return game.playCard(req.body);
+  }).then(function(game) {
+    return game.populateFields();
+  }).then(function(game) {
+    res.json(game);
+  }).catch(function(err) {
+    next(err);
+  });
+});
+
 router.put('/start/:id', function(req, res, next) {
   Game.findOne({ _id: req.params.id }).then(function(game) {
     return game.dealCards();

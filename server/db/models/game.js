@@ -132,6 +132,23 @@ schema.methods.checkReady = function checkReady() {
   });
 }
 
+schema.methods.playCard = function playCard(options) {
+  var that = this;
+  var cardId = options.cardId;
+  var playerId = options.playerId;
+  var promises = [];
+  promises.push(Player.findOne({ _id: playerId }).then(function(player) {
+    var cardIndex = player.cards.indexOf(cardId);
+    player.cards.splice(cardIndex, 1);
+    return player.save();
+  }));
+  this.discardDeck.push(cardId);
+  promises.push(this.save());
+  return Promise.all(promises).then(function() {
+    return that;
+  });
+}
+
 schema.methods.populateFields = function populateFields() {
   var that = this;
   var promises = [];

@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { createPlayer, updatePlayer, actionCreators } from 'js/actions';
+import {
+  createPlayer,
+  updatePlayer,
+  actionCreators,
+  playCard,
+} from 'js/actions';
 import { deserializeGameDataForPlayer } from 'js/server/deserializers';
 import { socket, initializeSocket } from 'js/socket';
 
@@ -14,6 +19,7 @@ class PlayerView extends React.Component {
   constructor(props) {
     super(props);
     this.indicateReady = this.indicateReady.bind(this);
+    this.playCard = this.playCard.bind(this);
   }
 
   componentWillMount() {
@@ -30,9 +36,11 @@ class PlayerView extends React.Component {
       this.createPlayer();
     });
     socket.on('gameUpdate', (gameData) => {
-      const { player, playerTurn } = deserializeGameDataForPlayer(gameData, this.props.id);
+      console.log('hello');
+      const { player, playerTurn, gameId } = deserializeGameDataForPlayer(gameData, this.props.id);
       this.props.actions.setPlayerInfo(player);
       this.props.actions.setPlayerTurn(playerTurn);
+      this.props.actions.setGameInfo({ id: gameId });
     });
   }
 
@@ -54,13 +62,23 @@ class PlayerView extends React.Component {
     });
   }
 
+  playCard(gameId, body) {
+    this.props.actions.playCard(gameId, body).then(() => {
+      console.log('card played');
+      socket.emit('gameUpdate');
+    });
+  }
+
   render() {
-    const { id, cards, isPlayerTurn } = this.props;
+    const { id, cards, isPlayerTurn, gameId } = this.props;
+    console.log('game id', gameId);
     return this.props.isReady ?
       <PlayerReady
         id={id}
+        gameId={gameId}
         cards={cards}
         isPlayerTurn={isPlayerTurn}
+        playCard={this.playCard}
       /> :
       <PlayerWaiting
         id={id}
@@ -73,12 +91,14 @@ PlayerView.propTypes = {
   actions: PropTypes.objectOf(PropTypes.func).isRequired,
   isReady: PropTypes.bool.isRequired,
   id: PropTypes.string,
+  gameId: PropTypes.string,
   cards: PropTypes.arrayOf(PropTypes.object),
   isPlayerTurn: PropTypes.bool,
 };
 
 PlayerView.defaultProps = {
   id: '',
+  gameId: '',
   cards: [],
   isPlayerTurn: false,
 };
@@ -87,14 +107,17 @@ PlayerView.defaultProps = {
 const mapStateToProps = state => ({
   ...state.player,
   isPlayerTurn: state.playerTurn,
+  gameId: state.game.id,
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: {
+    setGameInfo: bindActionCreators(actionCreators.setGameInfo, dispatch),
     setPlayerInfo: bindActionCreators(actionCreators.setPlayerInfo, dispatch),
     setPlayerTurn: bindActionCreators(actionCreators.setPlayerTurn, dispatch),
     createPlayer: createPlayer.bind(this, dispatch),
     updatePlayer: updatePlayer.bind(this, dispatch),
+    playCard: playCard.bind(this, dispatch),
   },
 });
 

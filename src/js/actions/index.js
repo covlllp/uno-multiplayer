@@ -1,6 +1,10 @@
 import { createActions } from 'redux-actions';
 
-import { deserializeGameData, deserializePlayerData } from 'js/server/deserializers';
+import {
+  deserializeGameData,
+  deserializePlayerData,
+  deserializeGameDataForPlayer,
+} from 'js/server/deserializers';
 
 export const actions = {
   INDICATE_GAME_READY: 'INDICATE_GAME_READY',
@@ -56,6 +60,26 @@ export function updatePlayer(dispatch, playerId, body) {
     .then((json) => {
       const data = deserializePlayerData(json);
       dispatch(actionCreators.setPlayerInfo(data));
+    });
+}
+
+export function playCard(dispatch, gameId, { playerId, cardId }) {
+  const body = {
+    playerId,
+    cardId,
+  };
+  return fetch(`/api/game/playCard/${gameId}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  }).then(res => res.json())
+    .then((json) => {
+      const { player, playerTurn } = deserializeGameDataForPlayer(json, playerId);
+      dispatch(actionCreators.setPlayerInfo(player));
+      dispatch(actionCreators.setPlayerTurn(playerTurn));
     });
 }
 

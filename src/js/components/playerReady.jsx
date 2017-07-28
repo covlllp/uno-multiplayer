@@ -8,12 +8,17 @@ const PlayerReady = props => (
     <div>Player {props.id}</div>
     <div>Card Count: {props.cards.length}</div>
     <div>Turn: {props.isPlayerTurn.toString()}</div>
+    <div>GameId: {props.gameId}</div>
     <div>
       {props.cards.map(card => (
         <Card
+          id={card.id}
+          playerId={props.id}
+          gameId={props.gameId}
           color={card.color}
           value={card.value}
           key={card.id}
+          onClick={props.playCard}
         />
       ))}
     </div>
@@ -22,8 +27,10 @@ const PlayerReady = props => (
 
 PlayerReady.propTypes = {
   id: PropTypes.string.isRequired,
+  gameId: PropTypes.string.isRequired,
   cards: PropTypes.arrayOf(PropTypes.object).isRequired,
   isPlayerTurn: PropTypes.bool.isRequired,
+  playCard: PropTypes.func.isRequired,
 };
 
 export default PlayerReady;

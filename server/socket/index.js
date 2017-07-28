@@ -17,11 +17,14 @@ function addSocketConnectionCallback(io) {
   // Board socket
   board.on('connection', function(socket) {
     console.log('board connected');
-    player.emit('gameCreated');
 
     socket.on('disconnect', function() {
       console.log('game ended');
       delete global.currentGameId;
+    });
+
+    socket.on('gameCreated', function() {
+      player.emit('gameCreated');
     });
 
     socket.on('gameUpdate', function() {
@@ -59,6 +62,7 @@ function addSocketConnectionCallback(io) {
     });
 
     socket.on('playerJoin', function(playerId) {
+      console.log('player ' + playerId + ' joined')
       player = playerId;
       if (!global.currentGameId) return;
 
@@ -67,6 +71,8 @@ function addSocketConnectionCallback(io) {
         return game.addPlayer(playerId);
       }).then((game) => {
         board.emit('gameUpdate', game);
+      }).catch((err) => {
+        console.log('error caught: ', err);
       });
     });
 
@@ -76,6 +82,16 @@ function addSocketConnectionCallback(io) {
         return game.checkReady();
       }).then((isReady) => {
         if (isReady) board.emit('gameReady');
+      });
+    });
+
+    socket.on('gameUpdate', function() {
+      console.log('player game update')
+      Game.findOne({ _id: global.currentGameId }).then((game) => {
+        return game.populateFields();
+      }).then((game) => {
+        board.emit('gameUpdate', game);
+        player.emit('gameUpdate', game);
       });
     });
   });
