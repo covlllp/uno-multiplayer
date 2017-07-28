@@ -3,9 +3,15 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { createNewGame, dealCards, actionCreators } from 'js/actions';
+import {
+  actionCreators,
+  createNewGame,
+  startGame,
+} from 'js/actions';
 import { deserializeGameData } from 'js/server/deserializers';
 import { socket, initializeSocket } from 'js/socket';
+
+import Card from 'js/components/card';
 
 class BoardView extends Component {
   componentWillMount() {
@@ -23,23 +29,37 @@ class BoardView extends Component {
     });
     socket.on('gameReady', () => {
       this.props.actions.indicateGameReady();
-      this.props.actions.dealCards(this.props.id).then(() => {
+      this.props.actions.startGame(this.props.id).then(() => {
         socket.emit('gameUpdate');
       });
     });
   }
 
   render() {
+    const {
+      gameReady,
+      drawDeck,
+      players,
+      lastPlayedCard,
+    } = this.props;
+
+    const card = lastPlayedCard ?
+      <Card color={lastPlayedCard.color} value={lastPlayedCard.value} /> :
+      null;
+
     return (
       <div>
         <div>
-          Board! {this.props.gameReady.toString()}
+          Board! {gameReady.toString()}
         </div>
         <div>
-          Deck Count! {this.props.drawDeck.length}
+          Deck Count! {drawDeck.length}
         </div>
         <div>
-          Players: {this.props.players.length}
+          Players: {players.length}
+        </div>
+        <div>
+          Last played card: {card}
         </div>
       </div>
     );
@@ -51,11 +71,13 @@ BoardView.propTypes = {
   drawDeck: PropTypes.arrayOf(PropTypes.string).isRequired,
   gameReady: PropTypes.bool.isRequired,
   players: PropTypes.arrayOf(PropTypes.object).isRequired,
+  lastPlayedCard: PropTypes.shape(Card.propTypes),
   id: PropTypes.string,
 };
 
 BoardView.defaultProps = {
   id: null,
+  lastPlayedCard: null,
 };
 
 
@@ -67,7 +89,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   actions: {
     createNewGame: createNewGame.bind(this, dispatch),
-    dealCards: dealCards.bind(this, dispatch),
+    startGame: startGame.bind(this, dispatch),
     indicateGameReady: bindActionCreators(actionCreators.indicateGameReady, dispatch),
     setGameInfo: bindActionCreators(actionCreators.setGameInfo, dispatch),
   },

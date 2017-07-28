@@ -94,6 +94,11 @@ schema.methods.dealCards = function dealCards() {
   return this.playersDraw(this.players, constants.DEAL_SIZE);
 }
 
+schema.methods.flipCard = function flipCard() {
+  this.lastPlayedCard = this.drawDeck.shift();
+  return this.save();
+}
+
 
 schema.methods.updatePlayers = function updatePlayers() {
   var that = this;
@@ -129,10 +134,18 @@ schema.methods.checkReady = function checkReady() {
 
 schema.methods.populateFields = function populateFields() {
   var that = this;
-  return Player.find({
+  var promises = [];
+  promises.push(Player.find({
     _id: { $in: this.players }
   }).populate('cards').exec().then(function(players) {
     that.players = players;
+    return that;
+  }));
+  promises.push(Card.findOne({ _id: this.lastPlayedCard }).then(function(card) {
+    that.lastPlayedCard = card;
+    return that;
+  }));
+  return Promise.all(promises).then(function() {
     return that;
   });
 }

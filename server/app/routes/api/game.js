@@ -22,9 +22,11 @@ router.post('/create', function(req, res, next) {
   });
 });
 
-router.put('/deal/:id', function(req, res, next) {
+router.put('/start/:id', function(req, res, next) {
   Game.findOne({ _id: req.params.id }).then(function(game) {
     return game.dealCards();
+  }).then(function(game) {
+    return game.flipCard();
   }).then(function(game) {
     return game.populateFields();
   }).then(function(game) {

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { createPlayer, updatePlayer, actionCreators } from 'js/actions';
-import { deserializePlayerData } from 'js/server/deserializers';
+import { deserializeGameDataForPlayer } from 'js/server/deserializers';
 import { socket, initializeSocket } from 'js/socket';
 
 import PlayerWaiting from 'js/components/playerWaiting';
@@ -30,14 +30,9 @@ class PlayerView extends React.Component {
       this.createPlayer();
     });
     socket.on('gameUpdate', (gameData) => {
-      const rawPlayers = gameData.players;
-      const players = rawPlayers.map(player => deserializePlayerData(player));
-      const playerIds = players.map(player => player.id);
-
-      const playerIndex = playerIds.indexOf(this.props.id);
-      if (playerIndex !== -1) {
-        this.props.actions.setPlayerInfo(players[playerIndex]);
-      }
+      const { player, playerTurn } = deserializeGameDataForPlayer(gameData, this.props.id);
+      this.props.actions.setPlayerInfo(player);
+      this.props.actions.setPlayerTurn(playerTurn);
     });
   }
 
@@ -60,11 +55,12 @@ class PlayerView extends React.Component {
   }
 
   render() {
-    const { id, cards } = this.props;
+    const { id, cards, isPlayerTurn } = this.props;
     return this.props.isReady ?
       <PlayerReady
         id={id}
         cards={cards}
+        isPlayerTurn={isPlayerTurn}
       /> :
       <PlayerWaiting
         id={id}
@@ -78,21 +74,25 @@ PlayerView.propTypes = {
   isReady: PropTypes.bool.isRequired,
   id: PropTypes.string,
   cards: PropTypes.arrayOf(PropTypes.object),
+  isPlayerTurn: PropTypes.bool,
 };
 
 PlayerView.defaultProps = {
   id: '',
   cards: [],
+  isPlayerTurn: false,
 };
 
 
 const mapStateToProps = state => ({
   ...state.player,
+  isPlayerTurn: state.playerTurn,
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: {
     setPlayerInfo: bindActionCreators(actionCreators.setPlayerInfo, dispatch),
+    setPlayerTurn: bindActionCreators(actionCreators.setPlayerTurn, dispatch),
     createPlayer: createPlayer.bind(this, dispatch),
     updatePlayer: updatePlayer.bind(this, dispatch),
   },

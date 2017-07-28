@@ -8,6 +8,7 @@ export const actions = {
   SET_PLAYER_INFO: 'SET_PLAYER_INFO',
   SET_PLAYER_CARDS: 'SET_PLAYER_CARDS',
   INDICATE_PLAYER_READY: 'INDICATE_PLAYER_READY',
+  SET_PLAYER_TURN: 'SET_PLAYER_TURN',
 };
 
 export const actionCreators = createActions(...Object.keys(actions));
@@ -22,8 +23,8 @@ export function createNewGame(dispatch) {
     });
 }
 
-export function dealCards(dispatch, gameId) {
-  return fetch(`/api/game/deal/${gameId}`, {
+export function startGame(dispatch, gameId) {
+  return fetch(`/api/game/start/${gameId}`, {
     method: 'PUT',
   }).then(res => res.json())
     .then((json) => {
