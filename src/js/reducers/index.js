@@ -11,13 +11,18 @@ actionMap[actions.SET_GAME_INFO] = (state, action) => ({
 actionMap[actions.SET_PLAYER_INFO] = (state, action) => ({
   ...state, player: action.payload,
 });
+actionMap[actions.SET_PLAYER_CARDS] = (state, action) => ({
+  ...state, playerCards: action.payload,
+});
 
 const initialState = {
   game: {
     players: [],
+    drawDeck: [],
   },
   gameReady: false,
   player: { isReady: false },
+  playerCards: [],
 };
 
 const reducer = handleActions(actionMap, initialState);

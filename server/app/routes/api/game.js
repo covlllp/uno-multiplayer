@@ -15,9 +15,19 @@ router.post('/create', function(req, res, next) {
 
   var newGame = new Game({});
   newGame.addNewDeck().then(function(game) {
-    return game.populate('drawDeck');
-  }).then(function(game) {
     global.currentGameId = game._id;
+    res.json(game);
+  }).catch(function(err) {
+    next(err);
+  });
+});
+
+router.put('/deal/:id', function(req, res, next) {
+  Game.findOne({ _id: req.params.id }).then(function(game) {
+    return game.dealCards();
+  }).then(function(game) {
+    return game.populateFields();
+  }).then(function(game) {
     res.json(game);
   }).catch(function(err) {
     next(err);

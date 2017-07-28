@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { createNewGame, actionCreators } from 'js/actions';
+import { createNewGame, dealCards, actionCreators } from 'js/actions';
+import { deserializeGameData } from 'js/server/deserializers';
 import { socket, initializeSocket } from 'js/socket';
 
 class BoardView extends Component {
@@ -17,8 +18,15 @@ class BoardView extends Component {
   }
 
   setSocketCallbacks() {
-    socket.on('gameUpdate', this.props.actions.setGameInfo);
-    socket.on('gameReady', this.props.actions.indicateGameReady);
+    socket.on('gameUpdate', (data) => {
+      this.props.actions.setGameInfo(deserializeGameData(data));
+    });
+    socket.on('gameReady', () => {
+      this.props.actions.indicateGameReady();
+      this.props.actions.dealCards(this.props.id).then(() => {
+        socket.emit('gameUpdate');
+      });
+    });
   }
 
   render() {
@@ -26,6 +34,9 @@ class BoardView extends Component {
       <div>
         <div>
           Board! {this.props.gameReady.toString()}
+        </div>
+        <div>
+          Deck Count! {this.props.drawDeck.length}
         </div>
         <div>
           Players: {this.props.players.length}
@@ -37,8 +48,14 @@ class BoardView extends Component {
 
 BoardView.propTypes = {
   actions: PropTypes.objectOf(PropTypes.func).isRequired,
+  drawDeck: PropTypes.arrayOf(PropTypes.string).isRequired,
   gameReady: PropTypes.bool.isRequired,
   players: PropTypes.arrayOf(PropTypes.object).isRequired,
+  id: PropTypes.string,
+};
+
+BoardView.defaultProps = {
+  id: null,
 };
 
 
@@ -49,9 +66,10 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: {
-    setGameInfo: bindActionCreators(actionCreators.setGameInfo, dispatch),
-    indicateGameReady: bindActionCreators(actionCreators.indicateGameReady, dispatch),
     createNewGame: createNewGame.bind(this, dispatch),
+    dealCards: dealCards.bind(this, dispatch),
+    indicateGameReady: bindActionCreators(actionCreators.indicateGameReady, dispatch),
+    setGameInfo: bindActionCreators(actionCreators.setGameInfo, dispatch),
   },
 });
 

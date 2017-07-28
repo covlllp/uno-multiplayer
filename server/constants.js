@@ -22,5 +22,6 @@ module.exports = {
     SKIP: 'skip',
     REVERSE: 'reverse',
     DRAW: 'draw'
-  }
+  },
+  DEAL_SIZE: 5,
 };

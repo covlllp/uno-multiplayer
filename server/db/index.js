@@ -5,14 +5,13 @@ var Promise = require('bluebird');
 var path = require('path');
 var chalk = require('chalk');
 
-mongoose.Promise = require('bluebird');
+mongoose.Promise = global.Promise;
 
 var DATABASE_URI = require(path.join(__dirname, '../env')).DATABASE_URI;
 var db = mongoose.connect(DATABASE_URI, { useMongoClient: true });
 
 // Require the models
 require('./models/card');
-require('./models/cardDeck');
 require('./models/player');
 require('./models/game');
 

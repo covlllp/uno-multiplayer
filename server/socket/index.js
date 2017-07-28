@@ -23,6 +23,19 @@ function addSocketConnectionCallback(io) {
       console.log('game ended');
       delete global.currentGameId;
     });
+
+    socket.on('gameUpdate', function() {
+      Game.findOne({ _id: global.currentGameId }).populate({
+        path: 'players',
+        model: 'Player',
+        populate: {
+          path: 'cards',
+          model: 'Card'
+        }
+      }).then((game) => {
+        player.emit('gameUpdate', game);
+      });
+    });
   });
 
   // Player socket
@@ -36,24 +49,22 @@ function addSocketConnectionCallback(io) {
       if (!player) return;
 
       Game.findOne({ _id: global.currentGameId })
-        .populate('drawDeck').then((game) => {
+        .then((game) => {
         return game.removePlayer(player);
       }).then((game) => {
-        return game.populate('players');
-      }).then((game) => {
         board.emit('gameUpdate', game);
-      })
-    })
+      }).catch((err) => {
+        console.log('error caught: ', err);
+      });
+    });
 
     socket.on('playerJoin', function(playerId) {
       player = playerId;
       if (!global.currentGameId) return;
 
       Game.findOne({ _id: global.currentGameId })
-        .populate('drawDeck').then((game) => {
+      .then((game) => {
         return game.addPlayer(playerId);
-      }).then((game) => {
-        return game.populate('players');
       }).then((game) => {
         board.emit('gameUpdate', game);
       });

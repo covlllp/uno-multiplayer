@@ -55,10 +55,45 @@ schema.methods.addNewDeck = function addNewDeck() {
   });
 
   return Promise.all(createdCardPromises).then(function(cards) {
-    that.drawDeck = that.drawDeck.concat(Card.shuffleCards(cards));
+    that.drawDeck = that.drawDeck.concat(Card.shuffleCards(cards.map(card => card._id)));
     return that.save();
   });
 }
+
+schema.methods.playerDraw = function playerDraw(player, amount) {
+  var drawnCards = this.drawDeck.splice(0, amount);
+  player.cards = player.cards.concat(drawnCards);
+  var promises = [
+    this.save(),
+    player.save(),
+  ];
+  return Promise.all(promises);
+}
+
+schema.methods.playersDraw = function playersDraw(playerIds, amount) {
+  var that = this;
+  var validPlayerIds = playerIds.every(function(playerId) {
+    return that.players.indexOf(playerId) !== -1;
+  });
+  if (!validPlayerIds) return Promise.reject();
+
+  return Player.find({
+    _id: { $in: playerIds }
+  }).then(function(players) {
+    return players.reduce(function(chain, player) {
+      return chain.then(() => {
+        return that.playerDraw(player, amount);
+      });
+    }, Promise.resolve());
+  }).then(function() {
+    return that;
+  });
+}
+
+schema.methods.dealCards = function dealCards() {
+  return this.playersDraw(this.players, constants.DEAL_SIZE);
+}
+
 
 schema.methods.updatePlayers = function updatePlayers() {
   var that = this;
@@ -75,9 +110,9 @@ schema.methods.addPlayer = function addPlayer(playerId) {
   return this.updatePlayers();
 }
 
-schema.methods.removePlayer = function addPlayer(playerId) {
+schema.methods.removePlayer = function removePlayer(playerId) {
   var playerIndex = this.players.indexOf(playerId);
-  if (playerIndex < 0) return this;
+  if (playerIndex < 0) return Promise.reject('player not registered');
 
   this.players.splice(playerIndex, 1);
   return this.updatePlayers();
@@ -92,6 +127,15 @@ schema.methods.checkReady = function checkReady() {
   });
 }
 
+schema.methods.populateFields = function populateFields() {
+  var that = this;
+  return Player.find({
+    _id: { $in: this.players }
+  }).populate('cards').exec().then(function(players) {
+    that.players = players;
+    return that;
+  });
+}
 
 
 mongoose.model('Game', schema);
