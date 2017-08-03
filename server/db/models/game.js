@@ -16,22 +16,6 @@ const schema = new Schema({
   players: [{ type: ObjectId, ref: 'Player' }],
 });
 
-schema.methods.playCard = function playCard(options) {
-  const {
-    cardId,
-    playerId,
-  } = options;
-  const promises = [];
-  promises.push(Player.findOne({ _id: playerId }).then((player) => {
-    const cardIndex = player.cards.indexOf(cardId);
-    player.cards.splice(cardIndex, 1);
-    return player.save();
-  }));
-  this.discardDeck.push(cardId);
-  promises.push(this.save());
-  return Promise.all(promises).then(() => this);
-};
-
 schema.methods = gameMethods;
 schema.statics = gameStatics;
 

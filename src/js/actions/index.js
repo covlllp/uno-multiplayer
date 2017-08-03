@@ -89,9 +89,7 @@ export function playCard(dispatch, gameId, { playerId, cardId }) {
     },
   }).then(res => res.json())
     .then((json) => {
-      const { player, playerTurn } = deserializeGameDataForPlayer(json, playerId);
-      dispatch(actionCreators.setPlayerInfo(player));
-      dispatch(actionCreators.setPlayerTurn(playerTurn));
+      readGameDataForPlayer(dispatch, json, playerId);
     });
 }
 

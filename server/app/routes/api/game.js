@@ -21,9 +21,11 @@ router.post('/create', (req, res, next) => {
 });
 
 router.put('/playCard/:id', (req, res, next) => {
-  Game.findOne({ _id: req.params.id })
-    .then(game => game.playCard(req.body))
-    .then(game => game.populateFields())
+  const {
+    playerId,
+    cardId,
+  } = req.body;
+  Game.playCardByPlayer(req.params.id, { playerId, cardId })
     .then((game) => {
       res.json(game);
     })

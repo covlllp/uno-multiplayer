@@ -67,6 +67,7 @@ function removePlayer(playerId) {
 }
 
 function addPlayer(playerId) {
+  if (this.players.indexOf(playerId) !== -1) return Promise.resolve();
   this.players.push(playerId);
   return this.save();
 }
@@ -107,6 +108,27 @@ function playersDraw(playerIds, amount) {
     .then(() => this);
 }
 
+function getNextTurnIndex() {
+  const numPlayers = this.players.length;
+  const direction = this.reversedOrder ? -1 : 1;
+  const newIndex = this.turn + direction;
+  return newIndex < 0 ?
+    (newIndex % numPlayers) + numPlayers :
+    newIndex % numPlayers;
+}
+
+function playCard(playerId, cardId) {
+  this.discardDeck.push(this.lastPlayedCard);
+  this.lastPlayedCard = cardId;
+  this.turn = this.getNextTurnIndex();
+  return Promise.all([
+    Player.findByIdAndUpdate(playerId, {
+      $pull: { cards: cardId },
+    }),
+    this.save(),
+  ]);
+}
+
 function dealCards() {
   return this.playersDraw(this.players, DEAL_SIZE);
 }
@@ -121,7 +143,9 @@ const methods = {
   addPlayer,
   dealCards,
   flipCard,
+  getNextTurnIndex,
   moveDiscardToDraw,
+  playCard,
   _playerDraw,
   _safePlayerDraw,
   playerDraw,

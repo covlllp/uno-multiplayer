@@ -50,10 +50,21 @@ function removePlayerAndPopulate(gameId, playerId) {
     });
 }
 
+function playCardByPlayer(gameId, options) {
+  const { playerId, cardId } = options;
+  return this.findById(gameId)
+    .then(game => game.playCard(playerId, cardId))
+    .then(() => this.getPopulatedGame(gameId))
+    .catch((err) => {
+      console.log('static error', err);
+    });
+}
+
 const statics = {
   addPlayerAndPopulate,
   checkReadyById,
   getPopulatedGame,
+  playCardByPlayer,
   removePlayerAndPopulate,
   startGame,
 };
