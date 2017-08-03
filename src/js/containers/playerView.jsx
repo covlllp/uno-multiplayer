@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import {
   createPlayer,
   updatePlayer,
+  drawCards,
   playCard,
   readGameDataForPlayer,
 } from 'js/actions';
@@ -19,6 +20,7 @@ class PlayerView extends React.Component {
     super(props);
     this.indicateReady = this.indicateReady.bind(this);
     this.playCard = this.playCard.bind(this);
+    this.drawCard = this.drawCard.bind(this);
   }
 
   componentWillMount() {
@@ -82,6 +84,16 @@ class PlayerView extends React.Component {
     });
   }
 
+  drawCard() {
+    this.props.actions.drawCards(this.props.gameId, {
+      playerId: this.props.id,
+      amount: 1,
+      playAsTurn: true,
+    }).then(() => {
+      socket.emit('gameUpdate', this.props.gameId);
+    });
+  }
+
   render() {
     const {
       id,
@@ -97,6 +109,7 @@ class PlayerView extends React.Component {
         cards={cards}
         isPlayerTurn={isPlayerTurn}
         playCard={this.playCard}
+        drawCard={this.drawCard}
         turnInfo={turnInfo}
       />) :
       (<PlayerWaiting
@@ -143,6 +156,7 @@ const mapDispatchToProps = dispatch => ({
   actions: {
     createPlayer: createPlayer.bind(this, dispatch),
     updatePlayer: updatePlayer.bind(this, dispatch),
+    drawCards: drawCards.bind(this, dispatch),
     playCard: playCard.bind(this, dispatch),
     readGameDataForPlayer: readGameDataForPlayer.bind(this, dispatch),
   },

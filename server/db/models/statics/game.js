@@ -60,9 +60,20 @@ function playCardByPlayer(gameId, options) {
     });
 }
 
+function drawCardsByPlayer(gameId, options) {
+  const { playerId, amount, playAsTurn } = options;
+  return this.findById(gameId)
+    .then(game => game.playerDraw(playerId, amount, playAsTurn))
+    .then(() => this.getPopulatedGame(gameId))
+    .catch((err) => {
+      console.log('static error', err);
+    });
+}
+
 const statics = {
   addPlayerAndPopulate,
   checkReadyById,
+  drawCardsByPlayer,
   getPopulatedGame,
   playCardByPlayer,
   removePlayerAndPopulate,

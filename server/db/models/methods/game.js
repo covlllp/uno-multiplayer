@@ -92,8 +92,11 @@ function _safePlayerDraw(player, amount) {
   return Promise.all(promiseCheck).then(() => this._playerDraw(player, amount));
 }
 
-function playerDraw(playerId, amount) {
-  return this.playersDraw([playerId], amount);
+function playerDraw(playerId, amount, playAsTurn = false) {
+  return this.playersDraw([playerId], amount).then(() => {
+    this.turn = this.getNextTurnIndex();
+    return this.save();
+  });
 }
 
 function playersDraw(playerIds, amount) {

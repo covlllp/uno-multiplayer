@@ -34,6 +34,21 @@ router.put('/playCard/:id', (req, res, next) => {
     });
 });
 
+router.put('/drawCards/:id', (req, res, next) => {
+  const {
+    playerId,
+    amount,
+    playAsTurn,
+  } = req.body;
+  Game.drawCardsByPlayer(req.params.id, { playerId, amount, playAsTurn })
+    .then((game) => {
+      res.json(game);
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
+
 router.put('/start/:id', (req, res, next) => {
   Game.startGame(req.params.id)
     .then((game) => {

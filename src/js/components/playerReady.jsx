@@ -25,6 +25,7 @@ class PlayerReady extends React.Component {
     ) : null;
     return (
       <div>
+        <button onClick={this.props.drawCard}>Draw Card</button>
         <div>Player {id}</div>
         <div>Card Count: {cards.length}</div>
         <div>Turn: {isPlayerTurn.toString()}</div>
@@ -51,6 +52,7 @@ PlayerReady.propTypes = {
   cards: PropTypes.arrayOf(PropTypes.object).isRequired,
   isPlayerTurn: PropTypes.bool.isRequired,
   playCard: PropTypes.func.isRequired,
+  drawCard: PropTypes.func.isRequired,
   turnInfo: PropTypes.shape(Card.propTypes),
 };
 

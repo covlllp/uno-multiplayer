@@ -93,3 +93,22 @@ export function playCard(dispatch, gameId, { playerId, cardId }) {
     });
 }
 
+export function drawCards(dispatch, gameId, { playerId, amount, playAsTurn }) {
+  const body = {
+    playerId,
+    amount,
+    playAsTurn,
+  };
+  return fetch(`/api/game/drawCards/${gameId}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  }).then(res => res.json())
+    .then((json) => {
+      readGameDataForPlayer(dispatch, json, playerId);
+    });
+}
+
