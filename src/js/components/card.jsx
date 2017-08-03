@@ -8,7 +8,7 @@ class Card extends React.Component {
   }
 
   onClick() {
-    this.props.onClick(this.props.gameId, { cardId: this.props.id, playerId: this.props.playerId });
+    this.props.onClick(this.props.id);
   }
 
   render() {
@@ -27,8 +27,6 @@ class Card extends React.Component {
 
 Card.propTypes = {
   id: PropTypes.string.isRequired,
-  gameId: PropTypes.string,
-  playerId: PropTypes.string,
   disabled: PropTypes.bool,
   color: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
@@ -37,8 +35,6 @@ Card.propTypes = {
 
 Card.defaultProps = {
   onClick: () => {},
-  gameId: null,
-  playerId: null,
   disabled: false,
 };
 

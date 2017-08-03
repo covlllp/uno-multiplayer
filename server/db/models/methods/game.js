@@ -108,25 +108,32 @@ function playersDraw(playerIds, amount) {
     .then(() => this);
 }
 
-function getNextTurnIndex() {
+function getNextTurnIndex(step = 1) {
   const numPlayers = this.players.length;
   const direction = this.reversedOrder ? -1 : 1;
-  const newIndex = this.turn + direction;
+  const turnStep = direction * step;
+  const newIndex = this.turn + turnStep;
   return newIndex < 0 ?
     (newIndex % numPlayers) + numPlayers :
     newIndex % numPlayers;
 }
 
 function playCard(playerId, cardId) {
-  this.discardDeck.push(this.lastPlayedCard);
-  this.lastPlayedCard = cardId;
-  this.turn = this.getNextTurnIndex();
-  return Promise.all([
-    Player.findByIdAndUpdate(playerId, {
-      $pull: { cards: cardId },
-    }),
-    this.save(),
-  ]);
+  return Card.findById(cardId).then((card) => {
+    this.discardDeck.push(this.lastPlayedCard);
+    this.lastPlayedCard = cardId;
+    if (card.value === CARD_VALUES.REVERSE) {
+      this.reversedOrder *= -1;
+    }
+    const step = card.value === CARD_VALUES.SKIP ? 2 : 1;
+    this.turn = this.getNextTurnIndex(step);
+    return Promise.all([
+      Player.findByIdAndUpdate(playerId, {
+        $pull: { cards: cardId },
+      }),
+      this.save(),
+    ]);
+  });
 }
 
 function dealCards() {

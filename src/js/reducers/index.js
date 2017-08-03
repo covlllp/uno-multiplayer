@@ -19,6 +19,7 @@ const initialState = {
   game: {
     players: [],
     drawDeck: [],
+    discardDeck: [],
   },
   gameReady: false,
   player: { isReady: false },

@@ -41,6 +41,7 @@ class BoardView extends Component {
     const {
       gameReady,
       drawDeck,
+      discardDeck,
       players,
       lastPlayedCard,
     } = this.props;
@@ -62,6 +63,9 @@ class BoardView extends Component {
           Deck Count! {drawDeck.length}
         </div>
         <div>
+          Discard Count! {discardDeck.length}
+        </div>
+        <div>
           Players: {players.length}
         </div>
         <div>
@@ -75,6 +79,7 @@ class BoardView extends Component {
 BoardView.propTypes = {
   actions: PropTypes.objectOf(PropTypes.func).isRequired,
   drawDeck: PropTypes.arrayOf(PropTypes.string).isRequired,
+  discardDeck: PropTypes.arrayOf(PropTypes.string).isRequired,
   gameReady: PropTypes.bool.isRequired,
   players: PropTypes.arrayOf(PropTypes.object).isRequired,
   lastPlayedCard: PropTypes.shape(Card.propTypes),

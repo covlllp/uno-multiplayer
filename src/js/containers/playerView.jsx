@@ -71,8 +71,12 @@ class PlayerView extends React.Component {
     });
   }
 
-  playCard(gameId, body) {
-    this.props.actions.playCard(gameId, body).then(() => {
+  playCard(playerId, cardId) {
+    const body = {
+      playerId,
+      cardId,
+    };
+    this.props.actions.playCard(this.props.gameId, body).then(() => {
       socket.emit('gameUpdate', this.props.gameId);
     });
   }
