@@ -14,21 +14,17 @@ function addSocketConnectionCallback(io) {
     socket.on('disconnect', () => {
       console.log('game ended');
       delete global.currentGameId;
+      player.emit('gameEnded');
     });
 
-    socket.on('gameCreated', () => {
-      player.emit('gameCreated');
+    socket.on('gameCreated', (gameId) => {
+      Game.getPopulatedGame(gameId).then((game) => {
+        player.emit('gameCreated', game);
+      });
     });
 
-    socket.on('gameUpdate', () => {
-      Game.findOne({ _id: global.currentGameId }).populate({
-        path: 'players',
-        model: 'Player',
-        populate: {
-          path: 'cards',
-          model: 'Card',
-        },
-      }).then((game) => {
+    socket.on('gameUpdate', (gameId) => {
+      Game.getPopulatedGame(gameId).then((game) => {
         player.emit('gameUpdate', game);
       });
     });
@@ -36,16 +32,15 @@ function addSocketConnectionCallback(io) {
 
   // Player socket
   player.on('connection', (socket) => {
-    let socketPlayer = null;
+    let socketPlayerId = null;
     console.log('player connected');
 
     socket.on('disconnect', () => {
       console.log('player left');
       if (!global.currentGameId) return;
-      if (!socketPlayer) return;
+      if (!socketPlayerId) return;
 
-      Game.findOne({ _id: global.currentGameId })
-        .then(game => game.removePlayer(player))
+      Game.removePlayerAndPopulate(global.currentGameId, socketPlayerId)
         .then((game) => {
           board.emit('gameUpdate', game);
         }).catch((err) => {
@@ -55,33 +50,31 @@ function addSocketConnectionCallback(io) {
 
     socket.on('playerJoin', (playerId) => {
       console.log(`player ${playerId} joined`);
-      socketPlayer = playerId;
+      socketPlayerId = playerId;
       if (!global.currentGameId) return;
 
-      Game.findOne({ _id: global.currentGameId })
-        .then(game => game.addPlayer(playerId))
+      Game.addPlayerAndPopulate(global.currentGameId, playerId)
         .then((game) => {
           board.emit('gameUpdate', game);
+          player.emit('gameUpdate', game);
         }).catch((err) => {
           console.log('error caught: ', err);
         });
     });
 
-    socket.on('playerReady', () => {
-      if (!global.currentGameId) return;
-      Game.findOne({ _id: global.currentGameId }).then(game => game.checkReady())
+    socket.on('playerReady', (gameId) => {
+      if (!gameId) return;
+      Game.checkReadyById(gameId)
         .then((isReady) => {
           if (isReady) board.emit('gameReady');
         });
     });
 
-    socket.on('gameUpdate', () => {
-      console.log('player game update');
-      Game.findOne({ _id: global.currentGameId }).then(game => game.populateFields())
-        .then((game) => {
-          board.emit('gameUpdate', game);
-          player.emit('gameUpdate', game);
-        });
+    socket.on('gameUpdate', (gameId) => {
+      Game.getPopulatedGame(gameId).then((game) => {
+        board.emit('gameUpdate', game);
+        player.emit('gameUpdate', game);
+      });
     });
   });
 

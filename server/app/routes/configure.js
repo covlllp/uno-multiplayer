@@ -15,7 +15,6 @@ export default function setRoutes(app) {
 
   // Otherwise serve main HTML page
   app.get('*', (req, res) => {
-    console.log('route working');
     res.sendFile(path.join(srcPath, 'index.html'));
   });
 

@@ -33,10 +33,7 @@ router.put('/playCard/:id', (req, res, next) => {
 });
 
 router.put('/start/:id', (req, res, next) => {
-  Game.findOne({ _id: req.params.id })
-    .then(game => game.dealCards())
-    .then(game => game.flipCard())
-    .then(game => game.populateFields())
+  Game.startGame(req.params.id)
     .then((game) => {
       res.json(game);
     })

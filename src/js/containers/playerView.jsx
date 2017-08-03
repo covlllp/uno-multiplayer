@@ -1,15 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
 import {
   createPlayer,
   updatePlayer,
-  actionCreators,
   playCard,
+  readGameDataForPlayer,
 } from 'js/actions';
-import { deserializeGameDataForPlayer } from 'js/server/deserializers';
 import { socket, initializeSocket } from 'js/socket';
 
 import PlayerWaiting from 'js/components/playerWaiting';
@@ -32,15 +30,21 @@ class PlayerView extends React.Component {
   }
 
   setSocketCallbacks() {
-    socket.on('gameCreated', () => {
+    socket.on('gameCreated', (data) => {
+      this.readGameData(data);
       this.createPlayer();
     });
-    socket.on('gameUpdate', (gameData) => {
-      const { player, playerTurn, gameId } = deserializeGameDataForPlayer(gameData, this.props.id);
-      this.props.actions.setPlayerInfo(player);
-      this.props.actions.setPlayerTurn(playerTurn);
-      this.props.actions.setGameInfo({ id: gameId });
+    socket.on('gameEnded', () => {
+      this.resetPlayer();
     });
+
+    socket.on('gameUpdate', (data) => {
+      this.readGameData(data);
+    });
+  }
+
+  readGameData(gameData) {
+    this.props.actions.readGameDataForPlayer(gameData, this.props.id);
   }
 
   createPlayer() {
@@ -53,34 +57,48 @@ class PlayerView extends React.Component {
     });
   }
 
+  resetPlayer() {
+    this.props.actions.updatePlayer(this.props.id, {
+      isReady: false,
+    });
+  }
+
   indicateReady() {
     this.props.actions.updatePlayer(this.props.id, {
       isReady: true,
     }).then(() => {
-      socket.emit('playerReady');
+      socket.emit('playerReady', this.props.gameId);
     });
   }
 
   playCard(gameId, body) {
     this.props.actions.playCard(gameId, body).then(() => {
-      socket.emit('gameUpdate');
+      socket.emit('gameUpdate', this.props.gameId);
     });
   }
 
   render() {
     const { id, cards, isPlayerTurn, gameId } = this.props;
-    return this.props.isReady ?
-      <PlayerReady
+    const view = this.props.isReady ?
+      (<PlayerReady
         id={id}
         gameId={gameId}
         cards={cards}
         isPlayerTurn={isPlayerTurn}
         playCard={this.playCard}
-      /> :
-      <PlayerWaiting
+      />) :
+      (<PlayerWaiting
         id={id}
         onReady={this.indicateReady}
-      />;
+      />);
+    return (
+      <div>
+        <div>
+          GameId: {this.props.gameId}
+        </div>
+        {view}
+      </div>
+    );
   }
 }
 
@@ -109,12 +127,10 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: {
-    setGameInfo: bindActionCreators(actionCreators.setGameInfo, dispatch),
-    setPlayerInfo: bindActionCreators(actionCreators.setPlayerInfo, dispatch),
-    setPlayerTurn: bindActionCreators(actionCreators.setPlayerTurn, dispatch),
     createPlayer: createPlayer.bind(this, dispatch),
     updatePlayer: updatePlayer.bind(this, dispatch),
     playCard: playCard.bind(this, dispatch),
+    readGameDataForPlayer: readGameDataForPlayer.bind(this, dispatch),
   },
 });
 

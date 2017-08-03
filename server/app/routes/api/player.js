@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 const router = express.Router();
 const Player = mongoose.model('Player');
 
-router.post('/', (res, next) => {
+router.post('/', (req, res, next) => {
   Player.create({}).then((player) => {
     res.json(player);
   }).catch((err) => {

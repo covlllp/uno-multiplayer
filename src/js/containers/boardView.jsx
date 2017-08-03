@@ -20,7 +20,7 @@ class BoardView extends Component {
 
   componentDidMount() {
     this.props.actions.createNewGame().then(() => {
-      socket.emit('gameCreated');
+      socket.emit('gameCreated', this.props.id);
     });
     this.setSocketCallbacks();
   }
@@ -32,7 +32,7 @@ class BoardView extends Component {
     socket.on('gameReady', () => {
       this.props.actions.indicateGameReady();
       this.props.actions.startGame(this.props.id).then(() => {
-        socket.emit('gameUpdate');
+        socket.emit('gameUpdate', this.props.id);
       });
     });
   }
