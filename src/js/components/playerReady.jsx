@@ -18,12 +18,17 @@ class PlayerReady extends React.Component {
       id,
       cards,
       isPlayerTurn,
+      turnInfo,
     } = this.props;
+    const info = turnInfo ? (
+      <Card id={turnInfo.id} color={turnInfo.color} value={turnInfo.value} />
+    ) : null;
     return (
       <div>
         <div>Player {id}</div>
         <div>Card Count: {cards.length}</div>
         <div>Turn: {isPlayerTurn.toString()}</div>
+        <div>Turn Info: {info}</div>
         <div>
           {cards.map(card => (
             <Card
@@ -46,6 +51,11 @@ PlayerReady.propTypes = {
   cards: PropTypes.arrayOf(PropTypes.object).isRequired,
   isPlayerTurn: PropTypes.bool.isRequired,
   playCard: PropTypes.func.isRequired,
+  turnInfo: PropTypes.shape(Card.propTypes),
+};
+
+PlayerReady.defaultProps = {
+  turnInfo: {},
 };
 
 export default PlayerReady;

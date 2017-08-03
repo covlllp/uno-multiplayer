@@ -64,7 +64,7 @@ export function updatePlayer(dispatch, playerId, body) {
 }
 
 export function readGameDataForPlayer(dispatch, gameData, playerId) {
-  const { player, playerTurn, gameId } = deserializeGameDataForPlayer(gameData, playerId);
+  const { player, playerTurn, gameState } = deserializeGameDataForPlayer(gameData, playerId);
   const {
     setPlayerInfo,
     setPlayerTurn,
@@ -72,7 +72,7 @@ export function readGameDataForPlayer(dispatch, gameData, playerId) {
   } = actionCreators;
   if (player) dispatch(setPlayerInfo(player));
   dispatch(setPlayerTurn(playerTurn));
-  dispatch(setGameInfo({ id: gameId }));
+  dispatch(setGameInfo(gameState));
 }
 
 export function playCard(dispatch, gameId, { playerId, cardId }) {

@@ -35,7 +35,7 @@ Card.propTypes = {
 
 Card.defaultProps = {
   onClick: () => {},
-  disabled: false,
+  disabled: true,
 };
 
 export default Card;

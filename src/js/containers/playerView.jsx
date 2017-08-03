@@ -10,6 +10,7 @@ import {
 } from 'js/actions';
 import { socket, initializeSocket } from 'js/socket';
 
+import Card from 'js/components/card';
 import PlayerWaiting from 'js/components/playerWaiting';
 import PlayerReady from 'js/components/playerReady';
 
@@ -82,7 +83,13 @@ class PlayerView extends React.Component {
   }
 
   render() {
-    const { id, cards, isPlayerTurn, gameId } = this.props;
+    const {
+      id,
+      cards,
+      isPlayerTurn,
+      gameId,
+      turnInfo,
+    } = this.props;
     const view = this.props.isReady ?
       (<PlayerReady
         id={id}
@@ -90,6 +97,7 @@ class PlayerView extends React.Component {
         cards={cards}
         isPlayerTurn={isPlayerTurn}
         playCard={this.playCard}
+        turnInfo={turnInfo}
       />) :
       (<PlayerWaiting
         id={id}
@@ -109,6 +117,7 @@ class PlayerView extends React.Component {
 PlayerView.propTypes = {
   actions: PropTypes.objectOf(PropTypes.func).isRequired,
   isReady: PropTypes.bool.isRequired,
+  turnInfo: PropTypes.shape(Card.propTypes).isRequired,
   id: PropTypes.string,
   gameId: PropTypes.string,
   cards: PropTypes.arrayOf(PropTypes.object),
@@ -127,6 +136,7 @@ const mapStateToProps = state => ({
   ...state.player,
   isPlayerTurn: state.playerTurn,
   gameId: state.game.id,
+  turnInfo: state.game.turnInfo,
 });
 
 const mapDispatchToProps = dispatch => ({

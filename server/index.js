@@ -18,7 +18,6 @@ const configureApplication = new Promise((resolve) => {
 });
 
 function startServer() {
-  console.log('server starting');
   const PORT = process.env.PORT || 3000;
   app.server.listen(PORT, () => {
     console.log(chalk.blue('Server started on port', chalk.magenta(PORT)));

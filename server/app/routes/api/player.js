@@ -15,7 +15,7 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
   const { body } = req;
-  Player.findOneAndUpdate({ _id: id }, body, { new: true }).then((player) => {
+  Player.findByIdAndUpdate(id, body, { new: true }).then((player) => {
     res.json(player);
   }).catch((err) => {
     next(err);

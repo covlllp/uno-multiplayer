@@ -122,6 +122,7 @@ function playCard(playerId, cardId) {
   return Card.findById(cardId).then((card) => {
     this.discardDeck.push(this.lastPlayedCard);
     this.lastPlayedCard = cardId;
+    this.turnInfo = card;
     if (card.value === CARD_VALUES.REVERSE) {
       this.reversedOrder *= -1;
     }
