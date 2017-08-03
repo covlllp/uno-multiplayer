@@ -47,9 +47,15 @@ function addNewDeck() {
   });
 
   return Promise.all(createdCardPromises).then((cards) => {
-    this.drawDeck = this.drawDeck.concat(Card.shuffleCards(cards.map(card => card._id)));
+    this.drawDeck.push(...Card.shuffleCards(cards.map(card => card._id)));
     return this.save();
   });
+}
+
+function moveDiscardToDraw() {
+  this.drawDeck.push(...Card.shuffleCards(this.discardDeck));
+  this.discardDeck = [];
+  return this.save;
 }
 
 function removePlayer(playerId) {
@@ -74,6 +80,17 @@ function _playerDraw(player, amount) {
   ]);
 }
 
+function _safePlayerDraw(player, amount) {
+  const promiseCheck = [Promise.resolve()];
+  if (this.drawDeck.length < amount) {
+    promiseCheck.push(this.moveDiscardToDraw());
+    if (this.drawDeck.length + this.discardDeck.length < amount) {
+      promiseCheck.push(this.addNewDeck());
+    }
+  }
+  return Promise.all(promiseCheck).then(() => this._playerDraw(player, amount));
+}
+
 function playerDraw(playerId, amount) {
   return this.playersDraw([playerId], amount);
 }
@@ -85,7 +102,7 @@ function playersDraw(playerIds, amount) {
   return Player.find({
     _id: { $in: playerIds },
   }).then(players => players.reduce((chain, player) => (
-    chain.then(() => this._playerDraw(player, amount))
+    chain.then(() => this._safePlayerDraw(player, amount))
   ), Promise.resolve()))
     .then(() => this);
 }
@@ -104,7 +121,9 @@ const methods = {
   addPlayer,
   dealCards,
   flipCard,
+  moveDiscardToDraw,
   _playerDraw,
+  _safePlayerDraw,
   playerDraw,
   playersDraw,
   removePlayer,

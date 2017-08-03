@@ -21,7 +21,7 @@ const constants = {
     REVERSE: 'reverse',
     DRAW: 'draw',
   },
-  DEAL_SIZE: 5,
+  DEAL_SIZE: 6,
 };
 
 export default constants;
