@@ -12,8 +12,8 @@ import {
 import { socket, initializeSocket } from 'js/socket';
 
 import Card from 'js/components/card';
-import PlayerWaiting from 'js/components/playerWaiting';
-import PlayerReady from 'js/components/playerReady';
+import PlayerWaiting from 'js/components/player/playerWaiting';
+import PlayerReady from 'js/components/player/playerReady';
 
 class PlayerView extends React.Component {
   constructor(props) {
@@ -63,6 +63,7 @@ class PlayerView extends React.Component {
   resetPlayer() {
     this.props.actions.updatePlayer(this.props.id, {
       isReady: false,
+      cards: [],
     });
   }
 

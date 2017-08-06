@@ -11,6 +11,7 @@ import {
 import { deserializeGameData } from 'js/server/deserializers';
 import { socket, initializeSocket } from 'js/socket';
 
+import Board from 'js/components/board/board';
 import Card from 'js/components/card';
 
 class BoardView extends Component {
@@ -44,6 +45,7 @@ class BoardView extends Component {
       discardDeck,
       players,
       lastPlayedCard,
+      turn,
     } = this.props;
 
     const card = lastPlayedCard ?
@@ -59,6 +61,13 @@ class BoardView extends Component {
         <div>
           Board! {gameReady.toString()}
         </div>
+        <Board
+          players={players}
+          turn={turn}
+          lastPlayedCard={lastPlayedCard}
+          drawDeck={drawDeck}
+          discardDeck={discardDeck}
+        />
         <div>
           Deck Count! {drawDeck.length}
         </div>
@@ -84,11 +93,13 @@ BoardView.propTypes = {
   players: PropTypes.arrayOf(PropTypes.object).isRequired,
   lastPlayedCard: PropTypes.shape(Card.propTypes),
   id: PropTypes.string,
+  turn: PropTypes.number,
 };
 
 BoardView.defaultProps = {
   id: null,
   lastPlayedCard: null,
+  turn: 0,
 };
 
 

@@ -127,7 +127,7 @@ function playCard(playerId, cardId) {
     this.lastPlayedCard = cardId;
     this.turnInfo = card;
     if (card.value === CARD_VALUES.REVERSE) {
-      this.reversedOrder *= -1;
+      this.reversedOrder = !this.reversedOrder;
     }
     const step = card.value === CARD_VALUES.SKIP ? 2 : 1;
     this.turn = this.getNextTurnIndex(step);

@@ -19,6 +19,15 @@ function getTurnInfo(gameData) {
   return deserializeCardData(cardData);
 }
 
+export function deserializePlayerData(json) {
+  const { cards, isReady, _id } = json;
+  return {
+    id: _id,
+    isReady,
+    cards: cards.map(card => deserializeCardData(card)),
+  };
+}
+
 export function deserializeGameData(json) {
   const {
     discardDeck,
@@ -32,20 +41,11 @@ export function deserializeGameData(json) {
   return {
     discardDeck,
     drawDeck,
-    players,
+    players: players.map(player => deserializePlayerData(player)),
     turn,
     id: _id,
     lastPlayedCard: deserializeCardData(lastPlayedCard),
     turnInfo,
-  };
-}
-
-export function deserializePlayerData(json) {
-  const { cards, isReady, _id } = json;
-  return {
-    id: _id,
-    isReady,
-    cards: cards.map(card => deserializeCardData(card)),
   };
 }
 
