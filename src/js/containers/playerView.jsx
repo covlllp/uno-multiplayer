@@ -32,6 +32,20 @@ class PlayerView extends React.Component {
     this.setSocketCallbacks();
   }
 
+  componentDidUpdate(prevProps) {
+    const {
+      isPlayerTurn,
+      turnInfo,
+    } = this.props;
+    const nowTurn = !prevProps.isPlayerTurn && isPlayerTurn;
+    const hasPenalty = turnInfo && turnInfo.penalty;
+    console.log(nowTurn);
+    console.log(hasPenalty);
+    if (nowTurn && hasPenalty) {
+      this.drawPenaltyCards(this.props.turnInfo.penalty);
+    }
+  }
+
   setSocketCallbacks() {
     socket.on('gameCreated', (data) => {
       this.readGameData(data);
@@ -90,6 +104,16 @@ class PlayerView extends React.Component {
       playerId: this.props.id,
       amount: 1,
       playAsTurn: true,
+    }).then(() => {
+      socket.emit('gameUpdate', this.props.gameId);
+    });
+  }
+
+  drawPenaltyCards(amount) {
+    this.props.actions.drawCards(this.props.gameId, {
+      playerId: this.props.id,
+      amount,
+      playAsTurn: false,
     }).then(() => {
       socket.emit('gameUpdate', this.props.gameId);
     });
