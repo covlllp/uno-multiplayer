@@ -7,7 +7,7 @@ import {
   updatePlayer,
   drawCards,
   playCard,
-  readGameDataForPlayer,
+  updateGameData,
 } from 'js/actions';
 import { socket, initializeSocket } from 'js/socket';
 
@@ -39,8 +39,6 @@ class PlayerView extends React.Component {
     } = this.props;
     const nowTurn = !prevProps.isPlayerTurn && isPlayerTurn;
     const hasPenalty = turnInfo && turnInfo.penalty;
-    console.log(nowTurn);
-    console.log(hasPenalty);
     if (nowTurn && hasPenalty) {
       this.drawPenaltyCards(this.props.turnInfo.penalty);
     }
@@ -48,7 +46,7 @@ class PlayerView extends React.Component {
 
   setSocketCallbacks() {
     socket.on('gameCreated', (data) => {
-      this.readGameData(data);
+      this.props.actions.updateGameData(data);
       this.createPlayer();
     });
     socket.on('gameEnded', () => {
@@ -56,12 +54,8 @@ class PlayerView extends React.Component {
     });
 
     socket.on('gameUpdate', (data) => {
-      this.readGameData(data);
+      this.props.actions.updateGameData(data);
     });
-  }
-
-  readGameData(gameData) {
-    this.props.actions.readGameDataForPlayer(gameData, this.props.id);
   }
 
   createPlayer() {
@@ -75,14 +69,14 @@ class PlayerView extends React.Component {
   }
 
   resetPlayer() {
-    this.props.actions.updatePlayer(this.props.id, {
+    this.props.actions.updatePlayer(this.props.gameId, this.props.id, {
       isReady: false,
       cards: [],
     });
   }
 
   indicateReady() {
-    this.props.actions.updatePlayer(this.props.id, {
+    this.props.actions.updatePlayer(this.props.gameId, this.props.id, {
       isReady: true,
     }).then(() => {
       socket.emit('playerReady', this.props.gameId);
@@ -154,8 +148,8 @@ class PlayerView extends React.Component {
 
 PlayerView.propTypes = {
   actions: PropTypes.objectOf(PropTypes.func).isRequired,
-  isReady: PropTypes.bool.isRequired,
-  turnInfo: PropTypes.shape(Card.propTypes).isRequired,
+  isReady: PropTypes.bool,
+  turnInfo: PropTypes.shape(Card.propTypes),
   id: PropTypes.string,
   gameId: PropTypes.string,
   cards: PropTypes.arrayOf(PropTypes.object),
@@ -163,19 +157,43 @@ PlayerView.propTypes = {
 };
 
 PlayerView.defaultProps = {
+  isReady: false,
   id: '',
   gameId: '',
   cards: [],
+  turnInfo: {},
   isPlayerTurn: false,
 };
 
 
-const mapStateToProps = state => ({
-  ...state.player,
-  isPlayerTurn: state.playerTurn,
-  gameId: state.game.id,
-  turnInfo: state.game.turnInfo,
-});
+const mapStateToProps = (state) => {
+  const {
+    game,
+    playerId,
+  } = state;
+  const {
+    id,
+    players,
+    turnInfo,
+    turn,
+  } = game;
+  let player = {};
+  let playerIndex = null;
+  players.forEach((p, index) => {
+    if (p.id === playerId) {
+      player = p;
+      playerIndex = index;
+    }
+  });
+
+  return {
+    ...player,
+    id: playerId || '',
+    gameId: id,
+    turnInfo,
+    isPlayerTurn: turn === playerIndex,
+  };
+};
 
 const mapDispatchToProps = dispatch => ({
   actions: {
@@ -183,7 +201,7 @@ const mapDispatchToProps = dispatch => ({
     updatePlayer: updatePlayer.bind(this, dispatch),
     drawCards: drawCards.bind(this, dispatch),
     playCard: playCard.bind(this, dispatch),
-    readGameDataForPlayer: readGameDataForPlayer.bind(this, dispatch),
+    updateGameData: updateGameData.bind(this, dispatch),
   },
 });
 

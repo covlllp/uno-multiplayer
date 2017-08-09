@@ -3,38 +3,53 @@ import { createActions } from 'redux-actions';
 import {
   deserializeGameData,
   deserializePlayerData,
-  deserializeGameDataForPlayer,
 } from 'js/server/deserializers';
+
+import { socket } from 'js/socket';
 
 export const actions = {
   INDICATE_GAME_READY: 'INDICATE_GAME_READY',
   SET_GAME_INFO: 'SET_GAME_INFO',
-  SET_PLAYER_INFO: 'SET_PLAYER_INFO',
-  SET_PLAYER_CARDS: 'SET_PLAYER_CARDS',
-  INDICATE_PLAYER_READY: 'INDICATE_PLAYER_READY',
-  SET_PLAYER_TURN: 'SET_PLAYER_TURN',
+  SET_PLAYER_ID: 'SET_PLAYER_ID',
 };
 
 export const actionCreators = createActions(...Object.keys(actions));
 
-export function createNewGame(dispatch) {
-  return fetch('/api/game/create', {
-    method: 'POST',
+export function updateGameData(dispatch, gameData) {
+  const data = deserializeGameData(gameData);
+  dispatch(actionCreators.setGameInfo(data));
+}
+
+export function fetchAndSetGameData({ route, method, dispatch, body }) {
+  return fetch(route, {
+    method,
+    body: JSON.stringify(body),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
   }).then(res => res.json())
     .then((json) => {
-      const data = deserializeGameData(json);
-      dispatch(actionCreators.setGameInfo(data));
+      updateGameData(dispatch, json);
     });
 }
 
+export function createNewGame(dispatch) {
+  return fetchAndSetGameData({
+    route: '/api/game/create',
+    method: 'POST',
+    dispatch,
+    body: {},
+  });
+}
+
 export function startGame(dispatch, gameId) {
-  return fetch(`/api/game/start/${gameId}`, {
+  return fetchAndSetGameData({
+    route: `/api/game/start/${gameId}`,
     method: 'PUT',
-  }).then(res => res.json())
-    .then((json) => {
-      const data = deserializeGameData(json);
-      dispatch(actionCreators.setGameInfo(data));
-    });
+    dispatch,
+    body: {},
+  });
 }
 
 
@@ -43,12 +58,12 @@ export function createPlayer(dispatch) {
     method: 'POST',
   }).then(res => res.json())
     .then((json) => {
-      const data = deserializePlayerData(json);
-      dispatch(actionCreators.setPlayerInfo(data));
+      const { id } = deserializePlayerData(json);
+      dispatch(actionCreators.setPlayerId(id));
     });
 }
 
-export function updatePlayer(dispatch, playerId, body) {
+export function updatePlayer(dispatch, gameId, playerId, body) {
   return fetch(`/api/player/${playerId}`, {
     method: 'PUT',
     body: JSON.stringify(body),
@@ -56,41 +71,23 @@ export function updatePlayer(dispatch, playerId, body) {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-  }).then(res => res.json())
-    .then((json) => {
-      const data = deserializePlayerData(json);
-      dispatch(actionCreators.setPlayerInfo(data));
-    });
+  }).then(() => {
+    socket.emit('gameUpdate', gameId);
+  });
 }
 
-export function readGameDataForPlayer(dispatch, gameData, playerId) {
-  const { player, playerTurn, gameState } = deserializeGameDataForPlayer(gameData, playerId);
-  const {
-    setPlayerInfo,
-    setPlayerTurn,
-    setGameInfo,
-  } = actionCreators;
-  if (player) dispatch(setPlayerInfo(player));
-  dispatch(setPlayerTurn(playerTurn));
-  dispatch(setGameInfo(gameState));
-}
 
 export function playCard(dispatch, gameId, { playerId, cardId }) {
   const body = {
     playerId,
     cardId,
   };
-  return fetch(`/api/game/playCard/${gameId}`, {
+  return fetchAndSetGameData({
+    route: `/api/game/playCard/${gameId}`,
     method: 'PUT',
-    body: JSON.stringify(body),
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  }).then(res => res.json())
-    .then((json) => {
-      readGameDataForPlayer(dispatch, json, playerId);
-    });
+    dispatch,
+    body,
+  });
 }
 
 export function drawCards(dispatch, gameId, { playerId, amount, playAsTurn }) {
@@ -99,16 +96,11 @@ export function drawCards(dispatch, gameId, { playerId, amount, playAsTurn }) {
     amount,
     playAsTurn,
   };
-  return fetch(`/api/game/drawCards/${gameId}`, {
+  return fetchAndSetGameData({
+    route: `/api/game/drawCards/${gameId}`,
     method: 'PUT',
-    body: JSON.stringify(body),
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  }).then(res => res.json())
-    .then((json) => {
-      readGameDataForPlayer(dispatch, json, playerId);
-    });
+    dispatch,
+    body,
+  });
 }
 

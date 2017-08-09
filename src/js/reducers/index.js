@@ -8,11 +8,8 @@ actionMap[actions.INDICATE_GAME_READY] = state => ({
 actionMap[actions.SET_GAME_INFO] = (state, action) => ({
   ...state, game: action.payload,
 });
-actionMap[actions.SET_PLAYER_INFO] = (state, action) => ({
-  ...state, player: action.payload,
-});
-actionMap[actions.SET_PLAYER_TURN] = (state, action) => ({
-  ...state, playerTurn: action.payload,
+actionMap[actions.SET_PLAYER_ID] = (state, action) => ({
+  ...state, playerId: action.payload,
 });
 
 const initialState = {
@@ -22,7 +19,7 @@ const initialState = {
     discardDeck: [],
   },
   gameReady: false,
-  player: { isReady: false },
+  playerId: null,
 };
 
 const reducer = handleActions(actionMap, initialState);
